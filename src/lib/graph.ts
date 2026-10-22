@@ -1,9 +1,16 @@
-import Graph from 'graphology';
-import louvain from 'graphology-communities-louvain';
-import betweennessCentrality from 'graphology-metrics/centrality/betweenness.js';
-import pagerank from 'graphology-metrics/centrality/pagerank.js';
+import GraphModule from 'graphology';
+import louvainModule from 'graphology-communities-louvain';
+import betweennessModule from 'graphology-metrics/centrality/betweenness.js';
+import pagerankModule from 'graphology-metrics/centrality/pagerank.js';
 import type { Store } from './store.js';
 import type { PathResult, SubgraphResult, Community } from './types.js';
+
+// shortcut: these CJS packages type their default import as the module namespace under NodeNext; at runtime it is the export itself.
+type Graph = InstanceType<typeof GraphModule.default>;
+const Graph = GraphModule as unknown as typeof GraphModule.default;
+const louvain = louvainModule as unknown as typeof louvainModule.default;
+const betweennessCentrality = betweennessModule as unknown as typeof betweennessModule.default;
+const pagerank = pagerankModule as unknown as typeof pagerankModule.default;
 
 /**
  * Run PageRank, filtering out isolated nodes that prevent convergence.
@@ -29,7 +36,7 @@ function safeRank(graph: Graph): Record<string, number> {
 
   if (connected.order === 0) return scores;
 
-  const pr = pagerank(connected, { maxIterations: 1000, tolerance: 1e-6 });
+  const pr = pagerank(connected, { getEdgeWeight: 'weight', maxIterations: 1000, tolerance: 1e-6 });
   for (const [id, score] of Object.entries(pr)) {
     scores[id] = score;
   }
